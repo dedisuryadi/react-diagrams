@@ -1,6 +1,7 @@
 import { BaseModel, BaseModelListener } from "./BaseModel";
 import { NodeModel } from "./NodeModel";
 import { LinkModel } from "./LinkModel";
+import { DefaultLinkModel } from "../defaults/models/DefaultLinkModel";
 import * as _ from "lodash";
 import { DiagramEngine } from "../DiagramEngine";
 
@@ -73,15 +74,12 @@ export class PortModel extends BaseModel<NodeModel, BaseModelListener> {
 	}
 
 	public createLinkModel(): LinkModel | null {
-		if (_.isFinite(this.maximumLinks)) {
-			var numberOfLinks: number = _.size(this.links);
-			if (this.maximumLinks === 1 && numberOfLinks >= 1) {
-				return _.values(this.links)[0];
-			} else if (numberOfLinks >= this.maximumLinks) {
-				return null;
-			}
+		if (!_.isFinite(this.maximumLinks)) { return null };
+		var numberOfLinks: number = _.size(this.links);
+		if (numberOfLinks >= this.maximumLinks) {
+			return null;
 		}
-		return null;
+		return new DefaultLinkModel();
 	}
 
 	updateCoords({ x, y, width, height }: { x: number; y: number; width: number; height: number }) {

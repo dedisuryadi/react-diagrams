@@ -28,8 +28,9 @@ export class DefaultPortModel extends PortModel {
 		});
 	}
 
-	link(port: PortModel): LinkModel {
+	link(port: PortModel): LinkModel | null {
 		let link = this.createLinkModel();
+		if (!link) { return link; }
 		link.setSourcePort(this);
 		link.setTargetPort(port);
 		return link;
@@ -42,8 +43,7 @@ export class DefaultPortModel extends PortModel {
 		return true;
 	}
 
-	createLinkModel(): LinkModel {
-		let link = super.createLinkModel();
-		return link || new DefaultLinkModel();
+	createLinkModel(): LinkModel | null {
+		return super.createLinkModel();
 	}
 }
