@@ -475,7 +475,7 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 					}
 				}}
 				onMouseDown={event => {
-					if (event.nativeEvent.which === 3) return;
+					if (event.nativeEvent.which === 3) { return }
 					this.setState({ ...this.state, wasMoved: false });
 
 					diagramEngine.clearRepaintEntities();
@@ -497,9 +497,8 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 							var relative = diagramEngine.getRelativeMousePoint(event);
 							var sourcePort = model.model;
 							var link = sourcePort.createLinkModel();
-							link.setSourcePort(sourcePort);
-
 							if (link) {
+								link.setSourcePort(sourcePort);
 								link.removeMiddlePoints();
 								if (link.getSourcePort() !== sourcePort) {
 									link.setSourcePort(sourcePort);
