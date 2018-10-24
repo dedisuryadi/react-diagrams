@@ -27,6 +27,7 @@ export interface DiagramProps extends BaseWidgetProps {
 	maxNumberPointsPerLink?: number;
 	smartRouting?: boolean;
 
+	onContextMenu?: any;
 	actionStartedFiring?: (action: BaseAction) => boolean;
 	actionStillFiring?: (action: BaseAction) => void;
 	actionStoppedFiring?: (action: BaseAction) => void;
@@ -75,7 +76,9 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 	}
 
 	componentWillUnmount() {
-		this.props.diagramEngine.removeListener(this.state.diagramEngineListener);
+		this.props.diagramEngine.removeListener(
+			this.state.diagramEngineListener
+		);
 		this.props.diagramEngine.setCanvas(null);
 		window.removeEventListener("keyup", this.onKeyUpPointer);
 		window.removeEventListener("mouseUp", this.onMouseUp);
@@ -84,7 +87,9 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 
 	componentWillReceiveProps(nextProps: DiagramProps) {
 		if (this.props.diagramEngine !== nextProps.diagramEngine) {
-			this.props.diagramEngine.removeListener(this.state.diagramEngineListener);
+			this.props.diagramEngine.removeListener(
+				this.state.diagramEngineListener
+			);
 			const diagramEngineListener = nextProps.diagramEngine.addListener({
 				repaintCanvas: () => this.forceUpdate()
 			});
@@ -93,7 +98,10 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 	}
 
 	componentWillUpdate(nextProps: DiagramProps) {
-		if (this.props.diagramEngine.diagramModel.id !== nextProps.diagramEngine.diagramModel.id) {
+		if (
+			this.props.diagramEngine.diagramModel.id !==
+			nextProps.diagramEngine.diagramModel.id
+		) {
 			this.setState({ renderedNodes: false });
 			nextProps.diagramEngine.diagramModel.rendered = true;
 		}
@@ -136,14 +144,19 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 	/**
 	 * Gets a model and element under the mouse cursor
 	 */
-	getMouseElement(event): { model: BaseModel<BaseEntity, BaseModelListener>; element: Element } {
+	getMouseElement(
+		event
+	): { model: BaseModel<BaseEntity, BaseModelListener>; element: Element } {
 		var target = event.target as Element;
 		var diagramModel = this.props.diagramEngine.diagramModel;
 
 		//is it a port
 		var element = Toolkit.closest(target, ".port[data-name]");
 		if (element) {
-			var nodeElement = Toolkit.closest(target, ".node[data-nodeid]") as HTMLElement;
+			var nodeElement = Toolkit.closest(
+				target,
+				".node[data-nodeid]"
+			) as HTMLElement;
 			return {
 				model: diagramModel
 					.getNode(nodeElement.getAttribute("data-nodeid"))
@@ -167,7 +180,9 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 		element = Toolkit.closest(target, "[data-linkid]");
 		if (element) {
 			return {
-				model: diagramModel.getLink(element.getAttribute("data-linkid")),
+				model: diagramModel.getLink(
+					element.getAttribute("data-linkid")
+				),
 				element: element
 			};
 		}
@@ -176,7 +191,9 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 		element = Toolkit.closest(target, ".node[data-nodeid]");
 		if (element) {
 			return {
-				model: diagramModel.getNode(element.getAttribute("data-nodeid")),
+				model: diagramModel.getNode(
+					element.getAttribute("data-nodeid")
+				),
 				element: element
 			};
 		}
@@ -212,10 +229,19 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 		var diagramModel = diagramEngine.getDiagramModel();
 		//select items so draw a bounding box
 		if (this.state.action instanceof SelectingAction) {
-			var relative = diagramEngine.getRelativePoint(event.clientX, event.clientY);
+			var relative = diagramEngine.getRelativePoint(
+				event.clientX,
+				event.clientY
+			);
 
 			_.forEach(diagramModel.getNodes(), node => {
-				if ((this.state.action as SelectingAction).containsElement(node.x, node.y, diagramModel)) {
+				if (
+					(this.state.action as SelectingAction).containsElement(
+						node.x,
+						node.y,
+						diagramModel
+					)
+				) {
 					node.setSelected(true);
 				}
 			});
@@ -223,7 +249,13 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 			_.forEach(diagramModel.getLinks(), link => {
 				var allSelected = true;
 				_.forEach(link.points, point => {
-					if ((this.state.action as SelectingAction).containsElement(point.x, point.y, diagramModel)) {
+					if (
+						(this.state.action as SelectingAction).containsElement(
+							point.x,
+							point.y,
+							diagramModel
+						)
+					) {
 						point.setSelected(true);
 					} else {
 						allSelected = false;
@@ -250,15 +282,22 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 				// in this case we need to also work out the relative grid position
 				if (
 					model.model instanceof NodeModel ||
-					(model.model instanceof PointModel && !model.model.isConnectedToPort())
+					(model.model instanceof PointModel &&
+						!model.model.isConnectedToPort())
 				) {
-					model.model.x = diagramModel.getGridPosition(model.initialX + amountX / amountZoom);
-					model.model.y = diagramModel.getGridPosition(model.initialY + amountY / amountZoom);
+					model.model.x = diagramModel.getGridPosition(
+						model.initialX + amountX / amountZoom
+					);
+					model.model.y = diagramModel.getGridPosition(
+						model.initialY + amountY / amountZoom
+					);
 
 					// update port coordinates as well
 					if (model.model instanceof NodeModel) {
 						_.forEach(model.model.getPorts(), port => {
-							const portCoords = this.props.diagramEngine.getPortCoords(port);
+							const portCoords = this.props.diagramEngine.getPortCoords(
+								port
+							);
 							port.updateCoords(portCoords);
 						});
 					}
@@ -269,8 +308,12 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 				} else if (model.model instanceof PointModel) {
 					// we want points that are connected to ports, to not necessarily snap to grid
 					// this stuff needs to be pixel perfect, dont touch it
-					model.model.x = model.initialX + diagramModel.getGridPosition(amountX / amountZoom);
-					model.model.y = model.initialY + diagramModel.getGridPosition(amountY / amountZoom);
+					model.model.x =
+						model.initialX +
+						diagramModel.getGridPosition(amountX / amountZoom);
+					model.model.y =
+						model.initialY +
+						diagramModel.getGridPosition(amountY / amountZoom);
 				}
 			});
 
@@ -288,8 +331,10 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 			//translate the actual canvas
 			if (this.props.allowCanvasTranslation) {
 				diagramModel.setOffset(
-					this.state.action.initialOffsetX + (event.clientX - this.state.action.mouseX),
-					this.state.action.initialOffsetY + (event.clientY - this.state.action.mouseY)
+					this.state.action.initialOffsetX +
+						(event.clientX - this.state.action.mouseX),
+					this.state.action.initialOffsetY +
+						(event.clientY - this.state.action.mouseY)
 				);
 				this.fireAction();
 				this.forceUpdate();
@@ -300,12 +345,15 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 	onKeyUp(event) {
 		//delete all selected
 		if (this.props.deleteKeys.indexOf(event.keyCode) !== -1) {
-			_.forEach(this.props.diagramEngine.getDiagramModel().getSelectedItems(), element => {
-				//only delete items which are not locked
-				if (!this.props.diagramEngine.isModelLocked(element)) {
-					element.remove();
+			_.forEach(
+				this.props.diagramEngine.getDiagramModel().getSelectedItems(),
+				element => {
+					//only delete items which are not locked
+					if (!this.props.diagramEngine.isModelLocked(element)) {
+						element.remove();
+					}
 				}
-			});
+			);
 			this.forceUpdate();
 		}
 	}
@@ -320,18 +368,29 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 				if (!(model.model instanceof PointModel)) {
 					return;
 				}
-				if (element && element.model instanceof PortModel && !diagramEngine.isModelLocked(element.model)) {
+				if (
+					element &&
+					element.model instanceof PortModel &&
+					!diagramEngine.isModelLocked(element.model)
+				) {
 					let link = model.model.getLink();
 					if (link.getTargetPort() !== null) {
 						//if this was a valid link already and we are adding a node in the middle, create 2 links from the original
-						if (link.getTargetPort() !== element.model && link.getSourcePort() !== element.model) {
+						if (
+							link.getTargetPort() !== element.model &&
+							link.getSourcePort() !== element.model
+						) {
 							const targetPort = link.getTargetPort();
 							let newLink = link.clone({});
 							newLink.setSourcePort(element.model);
 							newLink.setTargetPort(targetPort);
 							link.setTargetPort(element.model);
 							targetPort.removeLink(link);
-							newLink.removePointsBefore(newLink.getPoints()[link.getPointIndex(model.model)]);
+							newLink.removePointsBefore(
+								newLink.getPoints()[
+									link.getPointIndex(model.model)
+								]
+							);
 							link.removePointsAfter(model.model);
 							diagramEngine.getDiagramModel().addLink(newLink);
 							//if we are connecting to the same target or source, remove tweener points
@@ -343,7 +402,8 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 					} else {
 						link.setTargetPort(element.model);
 					}
-					delete this.props.diagramEngine.linksThatHaveInitiallyRendered[link.getID()];
+					delete this.props.diagramEngine
+						.linksThatHaveInitiallyRendered[link.getID()];
 				}
 			});
 
@@ -357,7 +417,10 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 
 					let selectedPoint: PointModel = model.model;
 					let link: LinkModel = selectedPoint.getLink();
-					if (link.getSourcePort() === null || link.getTargetPort() === null) {
+					if (
+						link.getSourcePort() === null ||
+						link.getTargetPort() === null
+					) {
 						link.remove();
 					}
 				});
@@ -381,7 +444,9 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 						_.some(
 							_.values(targetPort.getLinks()),
 							(l: LinkModel) =>
-								l !== link && (l.getSourcePort() === sourcePort || l.getTargetPort() === sourcePort)
+								l !== link &&
+								(l.getSourcePort() === sourcePort ||
+									l.getTargetPort() === sourcePort)
 						)
 					) {
 						//link is a duplicate
@@ -401,7 +466,8 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 	}
 
 	drawSelectionBox() {
-		let dimensions = (this.state.action as SelectingAction).getBoxDimensions();
+		let dimensions = (this.state
+			.action as SelectingAction).getBoxDimensions();
 		return (
 			<div
 				className={this.bem("__selector")}
@@ -415,9 +481,13 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 		);
 	}
 
+	onMouse;
+
 	render() {
 		var diagramEngine = this.props.diagramEngine;
-		diagramEngine.setMaxNumberPointsPerLink(this.props.maxNumberPointsPerLink);
+		diagramEngine.setMaxNumberPointsPerLink(
+			this.props.maxNumberPointsPerLink
+		);
 		diagramEngine.setSmartRoutingStatus(this.props.smartRouting);
 		var diagramModel = diagramEngine.getDiagramModel();
 
@@ -434,7 +504,9 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 						event.preventDefault();
 						event.stopPropagation();
 						const oldZoomFactor = diagramModel.getZoomLevel() / 100;
-						let scrollDelta = this.props.inverseZoom ? -event.deltaY : event.deltaY;
+						let scrollDelta = this.props.inverseZoom
+							? -event.deltaY
+							: event.deltaY;
 						//check if it is pinch gesture
 						if (event.ctrlKey && scrollDelta % 1 !== 0) {
 							/*Chrome and Firefox sends wheel event with deltaY that
@@ -446,7 +518,9 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 							scrollDelta /= 60;
 						}
 						if (diagramModel.getZoomLevel() + scrollDelta > 10) {
-							diagramModel.setZoomLevel(diagramModel.getZoomLevel() + scrollDelta);
+							diagramModel.setZoomLevel(
+								diagramModel.getZoomLevel() + scrollDelta
+							);
 						}
 
 						const zoomFactor = diagramModel.getZoomLevel() / 100;
@@ -455,15 +529,25 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 						const clientWidth = boundingRect.width;
 						const clientHeight = boundingRect.height;
 						// compute difference between rect before and after scroll
-						const widthDiff = clientWidth * zoomFactor - clientWidth * oldZoomFactor;
-						const heightDiff = clientHeight * zoomFactor - clientHeight * oldZoomFactor;
+						const widthDiff =
+							clientWidth * zoomFactor -
+							clientWidth * oldZoomFactor;
+						const heightDiff =
+							clientHeight * zoomFactor -
+							clientHeight * oldZoomFactor;
 						// compute mouse coords relative to canvas
 						const clientX = event.clientX - boundingRect.left;
 						const clientY = event.clientY - boundingRect.top;
 
 						// compute width and height increment factor
-						const xFactor = (clientX - diagramModel.getOffsetX()) / oldZoomFactor / clientWidth;
-						const yFactor = (clientY - diagramModel.getOffsetY()) / oldZoomFactor / clientHeight;
+						const xFactor =
+							(clientX - diagramModel.getOffsetX()) /
+							oldZoomFactor /
+							clientWidth;
+						const yFactor =
+							(clientY - diagramModel.getOffsetY()) /
+							oldZoomFactor /
+							clientHeight;
 
 						diagramModel.setOffset(
 							diagramModel.getOffsetX() - widthDiff * xFactor,
@@ -474,8 +558,16 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 						this.forceUpdate();
 					}
 				}}
+				onContextMenu={event => {
+					if (!this.props.onContextMenu) return;
+					var model = this.getMouseElement(event);
+					this.props.onContextMenu(event, model);
+					return false;
+				}}
 				onMouseDown={event => {
-					if (event.nativeEvent.which === 3) { return }
+					if (event.nativeEvent.which === 3) {
+						return;
+					}
 					this.setState({ ...this.state, wasMoved: false });
 
 					diagramEngine.clearRepaintEntities();
@@ -484,17 +576,32 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 					if (model === null) {
 						//is it a multiple selection
 						if (event.shiftKey) {
-							var relative = diagramEngine.getRelativePoint(event.clientX, event.clientY);
-							this.startFiringAction(new SelectingAction(relative.x, relative.y));
+							var relative = diagramEngine.getRelativePoint(
+								event.clientX,
+								event.clientY
+							);
+							this.startFiringAction(
+								new SelectingAction(relative.x, relative.y)
+							);
 						} else {
 							//its a drag the canvas event
 							diagramModel.clearSelection();
-							this.startFiringAction(new MoveCanvasAction(event.clientX, event.clientY, diagramModel));
+							this.startFiringAction(
+								new MoveCanvasAction(
+									event.clientX,
+									event.clientY,
+									diagramModel
+								)
+							);
 						}
 					} else if (model.model instanceof PortModel) {
 						//its a port element, we want to drag a link
-						if (!this.props.diagramEngine.isModelLocked(model.model)) {
-							var relative = diagramEngine.getRelativeMousePoint(event);
+						if (
+							!this.props.diagramEngine.isModelLocked(model.model)
+						) {
+							var relative = diagramEngine.getRelativeMousePoint(
+								event
+							);
 							var sourcePort = model.model;
 							var link = sourcePort.createLinkModel();
 							if (link) {
@@ -513,7 +620,11 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 								diagramModel.addLink(link);
 
 								this.startFiringAction(
-									new MoveItemsAction(event.clientX, event.clientY, diagramEngine)
+									new MoveItemsAction(
+										event.clientX,
+										event.clientY,
+										diagramEngine
+									)
 								);
 							}
 						} else {
@@ -526,28 +637,51 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 						}
 						model.model.setSelected(true);
 
-						this.startFiringAction(new MoveItemsAction(event.clientX, event.clientY, diagramEngine));
+						this.startFiringAction(
+							new MoveItemsAction(
+								event.clientX,
+								event.clientY,
+								diagramEngine
+							)
+						);
 					}
-					this.state.document.addEventListener("mousemove", this.onMouseMove);
-					this.state.document.addEventListener("mouseup", this.onMouseUp);
+					this.state.document.addEventListener(
+						"mousemove",
+						this.onMouseMove
+					);
+					this.state.document.addEventListener(
+						"mouseup",
+						this.onMouseUp
+					);
 				}}
 			>
 				{this.state.renderedNodes && (
 					<LinkLayerWidget
 						diagramEngine={diagramEngine}
 						pointAdded={(point: PointModel, event) => {
-							this.state.document.addEventListener("mousemove", this.onMouseMove);
-							this.state.document.addEventListener("mouseup", this.onMouseUp);
+							this.state.document.addEventListener(
+								"mousemove",
+								this.onMouseMove
+							);
+							this.state.document.addEventListener(
+								"mouseup",
+								this.onMouseUp
+							);
 							event.stopPropagation();
 							diagramModel.clearSelection(point);
 							this.setState({
-								action: new MoveItemsAction(event.clientX, event.clientY, diagramEngine)
+								action: new MoveItemsAction(
+									event.clientX,
+									event.clientY,
+									diagramEngine
+								)
 							});
 						}}
 					/>
 				)}
 				<NodeLayerWidget diagramEngine={diagramEngine} />
-				{this.state.action instanceof SelectingAction && this.drawSelectionBox()}
+				{this.state.action instanceof SelectingAction &&
+					this.drawSelectionBox()}
 			</div>
 		);
 	}
