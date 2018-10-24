@@ -559,7 +559,7 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 					}
 				}}
 				onContextMenu={event => {
-					if (!this.props.onContextMenu) return;
+					if (!this.props.onContextMenu) return false;
 					var model = this.getMouseElement(event);
 					this.props.onContextMenu(event, model);
 					return false;
