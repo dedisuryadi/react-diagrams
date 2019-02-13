@@ -481,8 +481,6 @@ export class DiagramWidget extends BaseWidget<DiagramProps, DiagramState> {
 		);
 	}
 
-	onMouse;
-
 	render() {
 		var diagramEngine = this.props.diagramEngine;
 		diagramEngine.setMaxNumberPointsPerLink(
