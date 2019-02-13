@@ -165,9 +165,9 @@ export class DefaultLinkWidget extends BaseWidget<DefaultLinkProps, DefaultLinkS
 			"data-linkid": this.props.link.getID(),
 			strokeOpacity: this.state.selected ? 0.1 : 0,
 			strokeWidth: 20,
-			onContextMenu: () => {
+			onContextMenu: event => {
 				if (!this.props.diagramEngine.isModelLocked(this.props.link)) {
-					event.preventDefault();
+					if (event && event.preventDefault) event.preventDefault();
 					this.props.link.remove();
 				}
 			}
